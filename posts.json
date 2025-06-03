@@ -1,12 +1,5 @@
-[
-  {
-    "folder": "1",
-    "image": "posts/1/image.png",
-    "text": "спамит"
-  },
-  {
-    "folder": "2",
-    "image": "posts/2/photo.png",
-    "text": "Мясо сочное"
-  }
-]
+{
+  "1": "https://telegra.ph/Primer-telegraph-stranicy-04-27",
+  "2": "https://telegra.ph/Drugaya-telegraph-stranica-04-27",
+  "3": "https://telegra.ph/Eshchyo-odin-post-04-27"
+}
