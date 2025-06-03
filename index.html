@@ -13,9 +13,7 @@
       --shadow: rgba(0, 0, 0, 0.4);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -42,6 +40,14 @@
       color: var(--text);
     }
 
+    #controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
     #posts-container {
       margin-top: 30px;
       display: flex;
@@ -57,7 +63,17 @@
       width: 300px;
       cursor: pointer;
       box-shadow: 0 0 10px var(--shadow);
-      transition: transform 0.2s;
+      transition: transform 0.2s, opacity 0.3s;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeIn 0.3s forwards;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .post:hover {
@@ -66,10 +82,10 @@
 
     .post img {
       width: 100%;
-      max-height: 180px;
-      object-fit: cover;
       border-radius: 10px;
       margin-bottom: 10px;
+      max-height: 200px;
+      object-fit: cover;
     }
 
     .post-title {
@@ -82,7 +98,13 @@
       color: #ccc;
     }
 
-    #modal, #rules-popup {
+    .tags {
+      margin-top: 5px;
+      font-size: 0.8em;
+      color: #999;
+    }
+
+    #modal {
       display: none;
       position: fixed;
       top: 0; left: 0;
@@ -93,7 +115,7 @@
       z-index: 1000;
     }
 
-    #modal-content, #rules-content {
+    #modal-content {
       background: var(--card);
       color: var(--text);
       padding: 30px;
@@ -110,12 +132,13 @@
       margin-bottom: 20px;
     }
 
-    button {
+    #closeModal {
+      margin-top: 15px;
       background: var(--accent);
       border: none;
       padding: 10px 15px;
-      border-radius: 5px;
       color: white;
+      border-radius: 5px;
       cursor: pointer;
     }
 
@@ -127,12 +150,13 @@
       border-radius: 10px;
       color: white;
       z-index: 1001;
+      cursor: pointer;
     }
 
-    #support-btn { bottom: 20px; right: 20px; }
-    #rules-btn { top: 20px; right: 20px; }
+    #support-btn { right: 20px; bottom: 20px; }
+    #rules-btn { right: 20px; top: 20px; }
 
-    #support-popup {
+    #support-popup, #rules-popup {
       display: none;
       position: fixed;
       top: 50%; left: 50%;
@@ -146,9 +170,7 @@
     }
 
     @media(max-width: 600px) {
-      .post {
-        width: 90%;
-      }
+      .post { width: 90%; }
     }
   </style>
 </head>
@@ -157,33 +179,32 @@
   <h1>гой baze</h1>
 
   <div style="text-align:center;">
-    <input type="text" id="searchInput" placeholder="Поиск по названию или описанию..." oninput="searchPosts()">
+    <input type="text" id="searchInput" placeholder="Поиск..." oninput="searchPosts()">
+    <div id="controls">
+      <button onclick="randomPost()">Случайный пост</button>
+    </div>
   </div>
 
-  <div id="posts-container"></div>
+  <div id="posts-container">Загрузка...</div>
 
   <div id="modal" onclick="closeModal(event)">
     <div id="modal-content">
       <div id="modal-body"></div>
-      <button onclick="closeModal(event)">Закрыть</button>
+      <button id="closeModal">Закрыть</button>
     </div>
   </div>
 
-  <div id="rules-popup" onclick="closeRules(event)">
-    <div id="rules-content">
-      <h2>Правила</h2>
-      <p>Здесь будут ваши правила.</p>
-      <button onclick="closeRules(event)">Ок</button>
-    </div>
-  </div>
-
+  <button id="support-btn" onclick="togglePopup('support')">Поддержка</button>
   <div id="support-popup">
-    <p>Тех поддержка сегодня не работает,<br>проверьте завтра.</p>
-    <button onclick="closeSupport()">Ок</button>
+    <p>Тех поддержка не работает,<br>проверьте позже.</p>
+    <button onclick="togglePopup('support')">Ок</button>
   </div>
 
-  <button id="support-btn" onclick="openSupport()">Поддержка</button>
-  <button id="rules-btn" onclick="openRules()">Правила</button>
+  <button id="rules-btn" onclick="togglePopup('rules')">Правила</button>
+  <div id="rules-popup">
+    <p>Не ломай сайт. Не грузи фигню. Будь базой.</p>
+    <button onclick="togglePopup('rules')">Ок</button>
+  </div>
 
   <script>
     let allPosts = [];
@@ -193,71 +214,48 @@
       container.innerHTML = 'Загрузка...';
 
       try {
-        const res = await fetch('posts.json?' + Date.now()); // Без кэша
-        const posts = await res.json();
-        allPosts = [];
-
+        const posts = await fetch('posts.json?noCache=' + Date.now()).then(r => r.json());
         container.innerHTML = '';
+        allPosts = [];
 
         for (const post of posts) {
           const url = post.link;
-          const parts = url.split('telegra.ph/');
-          if (parts.length < 2) continue;
-          const path = parts[1];
+          const path = url.split('telegra.ph/')[1];
 
-          const apiRes = await fetch(`https://api.telegra.ph/getPage/${path}?return_content=true`);
-          const data = await apiRes.json();
-          if (!data.ok) continue;
+          try {
+            const apiRes = await fetch(`https://api.telegra.ph/getPage/${path}?return_content=true`);
+            const data = await apiRes.json();
+            if (!data.ok) continue;
 
-          const title = data.result.title || 'Без названия';
-          const content = data.result.content;
-          const desc = extractText(content).slice(0, 100) + '...';
+            const page = data.result;
+            let desc = '', img = '', tags = [];
 
-          const image = extractImage(content);
+            page.content.forEach(n => {
+              if (n.tag === 'img' && n.attrs?.src && !img)
+                img = 'https://telegra.ph' + n.attrs.src;
+              if (n.tag === 'p' && typeof n.children?.[0] === 'string' && !desc)
+                desc = n.children[0];
+            });
 
-          allPosts.push({ title, description: desc, image, full: content });
+            const postObj = {
+              title: page.title,
+              description: desc || 'Без описания.',
+              image: img || '',
+              tags: post.tags || [],
+              full: page
+            };
 
-          const div = document.createElement('div');
-          div.className = 'post';
-          div.onclick = () => openModal({ title, description: desc, image });
-
-          div.innerHTML = `
-            ${image ? `<img src="${image}" alt="Изображение">` : ''}
-            <div class="post-title">${title}</div>
-            <div class="post-desc">${desc}</div>
-          `;
-          container.appendChild(div);
+            allPosts.push(postObj);
+          } catch (e) {
+            console.warn('Ошибка поста:', url, e);
+          }
         }
 
-        if (allPosts.length === 0) {
-          container.innerHTML = 'Посты не найдены.';
-        }
+        displayPosts(allPosts);
+
       } catch (e) {
-        console.error(e);
-        container.innerHTML = 'Ошибка загрузки постов.';
+        container.innerHTML = '<p>Ошибка загрузки постов.</p>';
       }
-    }
-
-    function extractText(content) {
-      return content.map(el => el.tag === 'p' ? el.children?.join('') || '' : '').join(' ').trim();
-    }
-
-    function extractImage(content) {
-      for (const el of content) {
-        if (el.tag === 'img' && el.attrs?.src) {
-          return 'https://telegra.ph' + el.attrs.src;
-        }
-      }
-      return '';
-    }
-
-    function searchPosts() {
-      const query = document.getElementById('searchInput').value.toLowerCase();
-      const results = allPosts.filter(post =>
-        post.title.toLowerCase().includes(query) ||
-        post.description.toLowerCase().includes(query)
-      );
-      displayPosts(results);
     }
 
     function displayPosts(posts) {
@@ -268,50 +266,54 @@
         div.className = 'post';
         div.onclick = () => openModal(post);
         div.innerHTML = `
-          ${post.image ? `<img src="${post.image}" alt="Image">` : ''}
+          ${post.image ? `<img src="${post.image}" alt="image" loading="lazy">` : ''}
           <div class="post-title">${post.title}</div>
           <div class="post-desc">${post.description}</div>
+          ${post.tags?.length ? `<div class="tags">#${post.tags.join(', #')}</div>` : ''}
         `;
         container.appendChild(div);
       });
     }
 
+    function searchPosts() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const results = allPosts.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q)
+      );
+      displayPosts(results);
+    }
+
     function openModal(post) {
+      const modal = document.getElementById('modal');
       const body = document.getElementById('modal-body');
       body.innerHTML = `
         <h2>${post.title}</h2>
         ${post.image ? `<img src="${post.image}" alt="">` : ''}
         <p>${post.description}</p>
       `;
-      document.getElementById('modal').style.display = 'flex';
+      modal.style.display = 'flex';
     }
 
     function closeModal(e) {
-      if (e.target.id === 'modal' || e.target.tagName === 'BUTTON') {
+      if (e.target.id === 'modal' || e.target.id === 'closeModal') {
         document.getElementById('modal').style.display = 'none';
       }
     }
 
-    function openSupport() {
-      document.getElementById('support-popup').style.display = 'block';
+    function togglePopup(type) {
+      const el = document.getElementById(type + '-popup');
+      el.style.display = (el.style.display === 'block') ? 'none' : 'block';
     }
 
-    function closeSupport() {
-      document.getElementById('support-popup').style.display = 'none';
-    }
-
-    function openRules() {
-      document.getElementById('rules-popup').style.display = 'flex';
-    }
-
-    function closeRules(e) {
-      if (e.target.id === 'rules-popup' || e.target.tagName === 'BUTTON') {
-        document.getElementById('rules-popup').style.display = 'none';
+    function randomPost() {
+      if (allPosts.length) {
+        const p = allPosts[Math.floor(Math.random() * allPosts.length)];
+        openModal(p);
       }
     }
 
     loadPosts();
   </script>
-
 </body>
 </html>
