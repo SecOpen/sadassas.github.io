@@ -59,7 +59,7 @@
     background: #0097a7;
   }
 
-  /* Модальное окно с предупреждением */
+  /* Модальное окно */
   #overlay {
     display: none;
     position: fixed;
@@ -73,17 +73,30 @@
     position: fixed;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 400px;
+    width: 90vw;
+    height: 80vh;
     background: var(--card-bg);
     border-radius: 15px;
     box-shadow: 0 0 20px var(--shadow);
     z-index: 1001;
-    padding: 20px;
+    padding: 10px;
     color: var(--text-color);
     text-align: center;
+    display: flex;
+    flex-direction: column;
+  }
+  #modal iframe {
+    flex-grow: 1;
+    border-radius: 10px;
+    border: none;
+    background: white;
+  }
+  #modal .modal-footer {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
   }
   #modal button {
-    margin-top: 15px;
     background: var(--accent-color);
     border: none;
     padding: 10px 20px;
@@ -96,6 +109,10 @@
   #modal button:hover {
     background: #0097a7;
   }
+  #modal .warning-text {
+    color: #ff6666;
+    margin-top: 5px;
+  }
 </style>
 </head>
 <body>
@@ -107,15 +124,22 @@
 <div id="overlay"></div>
 
 <div id="modal">
-  <p>Сайт telegra.ph заблокирован.<br>Откройте пост в новой вкладке, если хотите прочитать.</p>
-  <button id="open-new-tab">Открыть в новой вкладке</button><br>
-  <button id="modal-close">Закрыть</button>
+  <iframe id="postFrame" src="" allowfullscreen></iframe>
+  <div class="warning-text" id="iframeWarning" style="display:none;">
+    Внимание: сайт может быть заблокирован или не загружаться корректно.
+  </div>
+  <div class="modal-footer">
+    <button id="open-new-tab">Открыть в новой вкладке</button>
+    <button id="modal-close">Закрыть</button>
+  </div>
 </div>
 
 <script>
   const postsContainer = document.getElementById('posts-container');
   const overlay = document.getElementById('overlay');
   const modal = document.getElementById('modal');
+  const postFrame = document.getElementById('postFrame');
+  const iframeWarning = document.getElementById('iframeWarning');
   const openNewTabBtn = document.getElementById('open-new-tab');
   const modalCloseBtn = document.getElementById('modal-close');
 
@@ -123,13 +147,24 @@
 
   function openModal(url) {
     currentUrl = url;
+    postFrame.src = url;
+    iframeWarning.style.display = 'none';
     overlay.style.display = 'block';
-    modal.style.display = 'block';
+    modal.style.display = 'flex';
+
+    // Через 3 секунды показываем предупреждение, если iframe не загрузился
+    setTimeout(() => {
+      // Проверим, загрузился ли iframe - к сожалению, проверить напрямую нельзя из-за CORS
+      // Значит просто показываем предупреждение всегда, чтобы пользователь не удивлялся
+      iframeWarning.style.display = 'block';
+    }, 3000);
   }
 
   function closeModal() {
     overlay.style.display = 'none';
     modal.style.display = 'none';
+    postFrame.src = '';
+    iframeWarning.style.display = 'none';
     currentUrl = '';
   }
 
