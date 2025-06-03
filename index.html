@@ -107,9 +107,7 @@
 
 <h1>гой baze</h1>
 
-<div id="posts-container">
-  <!-- Посты будут тут -->
-</div>
+<div id="posts-container"></div>
 
 <div id="overlay"></div>
 
@@ -145,7 +143,6 @@
   modalClose.addEventListener('click', closeModal);
   overlay.addEventListener('click', closeModal);
 
-  // Рандомизация массива
   function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -153,11 +150,9 @@
     }
   }
 
-  // Загрузка posts.json и рендер постов
   fetch('posts.json')
     .then(res => res.json())
     .then(data => {
-      // data - объект с ключами "1", "2" и значениями-ссылками
       const posts = Object.entries(data).map(([id, url]) => ({id, url}));
       shuffle(posts);
 
