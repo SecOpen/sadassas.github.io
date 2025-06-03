@@ -116,9 +116,10 @@
       cursor: pointer;
     }
 
-    #support-btn, #rules-btn {
+    #support-btn {
       position: fixed;
       bottom: 20px;
+      right: 20px;
       background: var(--accent);
       border: none;
       padding: 10px 15px;
@@ -127,8 +128,17 @@
       z-index: 1001;
     }
 
-    #support-btn { right: 20px; }
-    #rules-btn { left: 20px; }
+    #rules-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--accent);
+      border: none;
+      padding: 10px 15px;
+      border-radius: 10px;
+      color: white;
+      z-index: 1001;
+    }
 
     #support-popup, #rules-popup {
       display: none;
@@ -186,22 +196,20 @@
     }
 
     function extractImage(content) {
-      if (!content) return '';
-    
       for (const node of content) {
         if (node.tag === 'img' && node.attrs?.src) {
-          return 'https://telegra.ph' + node.attrs.src;
+          const src = node.attrs.src;
+          return src.startsWith('/')
+            ? 'https://telegra.ph' + src
+            : src;
         }
-    
         if (node.children && Array.isArray(node.children)) {
           const childImage = extractImage(node.children);
           if (childImage) return childImage;
         }
       }
-    
       return '';
     }
-
 
     function extractText(content) {
       for (const node of content) {
