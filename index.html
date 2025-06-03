@@ -186,41 +186,55 @@
       return imgNode ? imgNode.attrs.src : null;
     }
 
-    async function loadPosts() {
-      const container = document.getElementById('posts-container');
-      container.innerHTML = '<p>Загрузка...</p>';
+async function loadPosts() {
+  const container = document.getElementById('posts-container');
+  container.textContent = 'Загрузка...';
+
+  try {
+    // Добавим метку времени в URL, чтобы кэш не использовался
+    const res = await fetch('posts.json?nocache=' + Date.now());
+    const posts = await res.json();
+
+    const fullPosts = [];
+
+    for (const post of posts) {
+      const url = post.link;
+      if (!url || typeof url !== 'string') continue;
+
+      const parts = url.split('telegra.ph/');
+      if (parts.length < 2) continue;
+
+      const path = parts[1];
+
       try {
-        const links = await fetch('posts.json').then(r => r.json());
-        allPosts = [];
+        const apiRes = await fetch(`https://api.telegra.ph/getPage/${path}?return_content=true`);
+        const data = await apiRes.json();
+        if (!data.ok) continue;
 
-        for (const post of links) {
-          const parts = post.link.split('telegra.ph/');
-          if (parts.length < 2) continue;
-          const path = parts[1];
-          const res = await fetch(`https://api.telegra.ph/getPage/${path}?return_content=true`);
-          const data = await res.json();
+        const title = data.result.title || 'Без названия';
+        const description = extractText(data.result.content).slice(0, 160) + '...';
 
-          if (!data.ok) continue;
-          const page = data.result;
-          const image = extractImage(page.content);
-          const description = page.content.map(nodeToText).join(' ').slice(0, 200) + '...';
+        // Найдём первую картинку (если есть)
+        const image = extractFirstImage(data.result.content);
 
-          const p = {
-            title: page.title || 'Без заголовка',
-            description,
-            image,
-            content: page.content
-          };
-
-          allPosts.push(p);
-        }
-
-        displayPosts(allPosts);
-      } catch (e) {
-        console.error(e);
-        container.innerHTML = '<p>Ошибка загрузки постов.</p>';
+        fullPosts.push({ title, description, image, content: data.result });
+      } catch (err) {
+        console.warn('Ошибка загрузки с Telegraph:', err);
       }
     }
+
+    allPosts = fullPosts;
+    displayPosts(allPosts);
+
+    if (allPosts.length === 0) {
+      container.textContent = 'Посты не найдены.';
+    }
+  } catch (err) {
+    console.error('Ошибка загрузки:', err);
+    container.textContent = 'Ошибка загрузки постов.';
+  }
+}
+
 
     function displayPosts(posts) {
       const container = document.getElementById('posts-container');
