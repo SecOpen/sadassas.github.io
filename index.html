@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>гой baze</title>
 <style>
   :root {
@@ -15,161 +16,267 @@
     box-sizing: border-box;
   }
   body {
-    margin: 0;
+    margin: 0; padding: 40px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: var(--bg-color);
     color: var(--text-color);
-    font-family: 'Segoe UI', sans-serif;
-    padding: 40px;
+    overflow-x: hidden;
   }
   h1 {
     text-align: center;
     color: var(--accent-color);
+    font-size: 2.5em;
     margin-bottom: 30px;
+    animation: fadeInDown 1s ease;
+  }
+  @keyframes fadeInDown {
+    from {opacity: 0; transform: translateY(-20px);}
+    to {opacity: 1; transform: translateY(0);}
+  }
+  input[type="text"] {
+    padding: 10px;
+    width: 300px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    background: #222;
+    color: var(--text-color);
+    transition: 0.3s ease;
+  }
+  input[type="text"]:focus {
+    box-shadow: 0 0 5px var(--accent-color);
+  }
+  button {
+    padding: 10px 15px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    background: var(--accent-color);
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  button:hover {
+    background: #0097a7;
+  }
+  #top-buttons {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+  #rules {
+    display: none;
+    background: var(--card-bg);
+    padding: 20px;
+    margin: 80px auto 20px auto;
+    border-radius: 10px;
+    box-shadow: 0 0 10px var(--shadow);
+    max-width: 800px;
+    white-space: pre-wrap;
+    animation: fadeIn 0.5s ease;
+  }
+  @keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
   }
   #posts-container {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
     justify-content: center;
+    margin-top: 40px;
+    animation: fadeIn 1s ease;
   }
   .post {
     background: var(--card-bg);
     padding: 15px;
     border-radius: 10px;
-    width: 300px;
     box-shadow: 0 0 10px var(--shadow);
-    cursor: default;
+    width: 280px;
     text-align: center;
+    transition: transform 0.3s ease;
   }
-  .post-title {
-    font-size: 1.1em;
-    margin-bottom: 10px;
+  .post:hover {
+    transform: translateY(-5px);
   }
-  button.read-btn {
+  .post-link {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 8px 12px;
     background: var(--accent-color);
-    border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
     color: white;
-    cursor: pointer;
-    font-weight: bold;
+    text-decoration: none;
+    border-radius: 5px;
     transition: background 0.3s ease;
   }
-  button.read-btn:hover {
+  .post-link:hover {
     background: #0097a7;
   }
-
-  /* Модальное окно */
-  #overlay {
-    display: none;
+  #support-button {
     position: fixed;
-    top:0; left:0;
-    width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.7);
+    bottom: 20px;
+    right: 20px;
     z-index: 1000;
   }
-  #modal {
+  #support-popup {
     display: none;
     position: fixed;
-    top: 50%; left: 50%;
+    top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%);
-    width: 90vw;
-    max-width: 600px;
     background: var(--card-bg);
+    padding: 30px;
     border-radius: 15px;
     box-shadow: 0 0 20px var(--shadow);
     z-index: 1001;
-    padding: 20px;
-    color: var(--text-color);
     text-align: center;
+    max-width: 320px;
   }
-  #modal p {
-    margin-bottom: 20px;
+  #support-popup h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
   }
-  #modal button {
-    background: var(--accent-color);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.3s ease;
+  #overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.4);
+    z-index: 999;
   }
-  #modal button:hover {
-    background: #0097a7;
+  #results {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+  #results .post {
+    width: 280px;
   }
 </style>
 </head>
 <body>
 
-<h1>гой baze</h1>
+  <div id="top-buttons">
+    <button onclick="toggleRules()">Правила</button>
+  </div>
 
-<div id="posts-container"></div>
+  <h1>гой baze</h1>
 
-<div id="overlay"></div>
+  <div style="text-align: center;">
+    <input type="text" id="searchInput" placeholder="Введите слово для поиска (номер или часть ссылки)" oninput="searchPosts()" autocomplete="off" />
+    <button onclick="searchPosts()">Поиск</button>
+  </div>
 
-<div id="modal">
-  <p>Извините, данный контент доступен только по ссылке.</p>
-  <button id="open-new-tab">Открыть в новой вкладке</button>
-  <button id="modal-close">Закрыть</button>
-</div>
+  <div id="rules">
+    <h2>Правила (eula.txt):</h2>
+    <div id="rulesText">Загрузка...</div>
+  </div>
+
+  <div id="posts-container"></div>
+
+  <div id="results"></div>
+
+  <div id="overlay" onclick="closeSupport()"></div>
+  <div id="support-popup">
+    <h2>Поддержка</h2>
+    <p>Тех поддержка сегодня не работает, проверьте завтра.</p>
+    <button onclick="closeSupport()">Закрыть</button>
+  </div>
+
+  <button id="support-button" onclick="openSupport()">Поддержка</button>
 
 <script>
-  const postsContainer = document.getElementById('posts-container');
-  const overlay = document.getElementById('overlay');
-  const modal = document.getElementById('modal');
-  const openNewTabBtn = document.getElementById('open-new-tab');
-  const modalCloseBtn = document.getElementById('modal-close');
+  let posts = [];
 
-  let currentUrl = '';
-
-  function openModal(url) {
-    currentUrl = url;
-    overlay.style.display = 'block';
-    modal.style.display = 'block';
-  }
-
-  function closeModal() {
-    overlay.style.display = 'none';
-    modal.style.display = 'none';
-    currentUrl = '';
-  }
-
-  openNewTabBtn.addEventListener('click', () => {
-    if(currentUrl) window.open(currentUrl, '_blank', 'noopener');
-  });
-
-  modalCloseBtn.addEventListener('click', closeModal);
-  overlay.addEventListener('click', closeModal);
-
-  function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+  function toggleRules() {
+    const rules = document.getElementById('rules');
+    if (rules.style.display === 'none' || rules.style.display === '') {
+      rules.style.display = 'block';
+      loadRules();
+    } else {
+      rules.style.display = 'none';
     }
   }
 
-  fetch('posts.json')
-    .then(res => res.json())
-    .then(data => {
-      const posts = Object.entries(data).map(([id, url]) => ({id, url}));
-      shuffle(posts);
+  function openSupport() {
+    document.getElementById('overlay').style.display = 'block';
+    document.getElementById('support-popup').style.display = 'block';
+  }
 
-      for (const post of posts) {
-        const div = document.createElement('div');
-        div.className = 'post';
-        div.innerHTML = `
-          <div class="post-title">Пост №${post.id}</div>
-          <button class="read-btn">Читать</button>
-        `;
-        div.querySelector('button.read-btn').addEventListener('click', () => openModal(post.url));
-        postsContainer.appendChild(div);
+  function closeSupport() {
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('support-popup').style.display = 'none';
+  }
+
+  async function loadRules() {
+    try {
+      const res = await fetch('eula.txt');
+      const text = await res.text();
+      document.getElementById('rulesText').textContent = text;
+    } catch (e) {
+      document.getElementById('rulesText').textContent = 'Не удалось загрузить правила.';
+    }
+  }
+
+  async function loadPosts() {
+    try {
+      const res = await fetch('posts.json');
+      posts = await res.json();
+
+      // Перемешиваем массив
+      for (let i = posts.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [posts[i], posts[j]] = [posts[j], posts[i]];
       }
-    })
-    .catch(() => {
-      postsContainer.innerHTML = '<p>Ошибка загрузки постов.</p>';
-    });
+
+      showPosts(posts, 'posts-container');
+      document.getElementById('results').innerHTML = '';
+    } catch (e) {
+      document.getElementById('posts-container').innerHTML = '<p>Ошибка загрузки постов.</p>';
+    }
+  }
+
+  function showPosts(postsArray, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    for (const post of postsArray) {
+      const div = document.createElement('div');
+      div.className = 'post';
+      div.innerHTML = `
+        <p>Пост №${post.folder}</p>
+        <a href="${post.link}" target="_blank" rel="noopener noreferrer" class="post-link">Открыть на telegraph</a>
+      `;
+      container.appendChild(div);
+    }
+  }
+
+  function searchPosts() {
+    const query = document.getElementById('searchInput').value.trim().toLowerCase();
+    const resultsContainer = document.getElementById('results');
+    resultsContainer.innerHTML = '';
+
+    if (!query) {
+      // если пустой поиск — показываем все посты в основном контейнере
+      showPosts(posts, 'posts-container');
+      return;
+    }
+
+    // ищем совпадения по номеру папки или по ссылке
+    const matches = posts.filter(post =>
+      post.folder.toString().includes(query) ||
+      post.link.toLowerCase().includes(query)
+    );
+
+    if (matches.length === 0) {
+      resultsContainer.innerHTML = '<p>Ничего не найдено.</p>';
+    } else {
+      showPosts(matches, 'results');
+    }
+  }
+
+  loadPosts();
 </script>
 
 </body>
