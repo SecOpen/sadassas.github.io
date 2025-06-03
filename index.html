@@ -40,7 +40,7 @@
       color: var(--text);
     }
 
-    #results, #posts-container {
+    #posts-container {
       margin-top: 30px;
       display: flex;
       flex-wrap: wrap;
@@ -56,6 +56,7 @@
       cursor: pointer;
       box-shadow: 0 0 10px var(--shadow);
       transition: transform 0.2s;
+      text-align: center;
     }
 
     .post:hover {
@@ -151,7 +152,7 @@
   <h1>гой baze</h1>
 
   <div style="text-align:center;">
-    <input type="text" id="searchInput" placeholder="Поиск по названию или описанию..." oninput="searchPosts()">
+    <input type="text" id="searchInput" placeholder="Поиск..." oninput="searchPosts()">
   </div>
 
   <div id="posts-container"></div>
@@ -172,14 +173,51 @@
   <script>
     let allPosts = [];
 
+    function nodeToText(node) {
+      if (!node) return '';
+      if (typeof node === 'string') return node;
+      if (node.tag === 'img') return '';
+      let inner = (node.children || []).map(nodeToText).join('');
+      return inner || '';
+    }
+
+    function extractImage(content) {
+      const imgNode = content?.find(n => n.tag === 'img' && n.attrs?.src);
+      return imgNode ? imgNode.attrs.src : null;
+    }
+
     async function loadPosts() {
       const container = document.getElementById('posts-container');
+      container.innerHTML = '<p>Загрузка...</p>';
       try {
-        const res = await fetch('posts.json');
-        const posts = await res.json();
-        allPosts = posts;
-        displayPosts(posts);
-      } catch (err) {
+        const links = await fetch('posts.json').then(r => r.json());
+        allPosts = [];
+
+        for (const post of links) {
+          const parts = post.link.split('telegra.ph/');
+          if (parts.length < 2) continue;
+          const path = parts[1];
+          const res = await fetch(`https://api.telegra.ph/getPage/${path}?return_content=true`);
+          const data = await res.json();
+
+          if (!data.ok) continue;
+          const page = data.result;
+          const image = extractImage(page.content);
+          const description = page.content.map(nodeToText).join(' ').slice(0, 200) + '...';
+
+          const p = {
+            title: page.title || 'Без заголовка',
+            description,
+            image,
+            content: page.content
+          };
+
+          allPosts.push(p);
+        }
+
+        displayPosts(allPosts);
+      } catch (e) {
+        console.error(e);
         container.innerHTML = '<p>Ошибка загрузки постов.</p>';
       }
     }
@@ -191,9 +229,8 @@
         const div = document.createElement('div');
         div.className = 'post';
         div.onclick = () => openModal(post);
-
         div.innerHTML = `
-          ${post.image ? `<img src="${post.image}" alt="Image">` : ''}
+          ${post.image ? `<img src="${post.image}" alt="">` : ''}
           <div class="post-title">${post.title}</div>
           <div class="post-desc">${post.description}</div>
         `;
@@ -210,6 +247,12 @@
       displayPosts(results);
     }
 
+    function closeModal(e) {
+      if (e.target.id === 'modal' || e.target.id === 'closeModal') {
+        document.getElementById('modal').style.display = 'none';
+      }
+    }
+
     function openModal(post) {
       const modal = document.getElementById('modal');
       const body = document.getElementById('modal-body');
@@ -219,12 +262,6 @@
         <p>${post.description}</p>
       `;
       modal.style.display = 'flex';
-    }
-
-    function closeModal(e) {
-      if (e.target.id === 'modal' || e.target.id === 'closeModal') {
-        document.getElementById('modal').style.display = 'none';
-      }
     }
 
     function openSupport() {
@@ -237,6 +274,5 @@
 
     loadPosts();
   </script>
-
 </body>
 </html>
