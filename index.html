@@ -1,275 +1,181 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8" />
-    <title>гой baze</title>
-    <style>
-        :root {
-            --bg-color: #121212;
-            --text-color: #e0e0e0;
-            --accent-color: #00bcd4;
-            --card-bg: #1e1e1e;
-            --shadow: rgba(0, 0, 0, 0.4);
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            background: var(--bg-color);
-            color: var(--text-color);
-            padding: 40px;
-            overflow-x: hidden;
-        }
-
-        h1 {
-            text-align: center;
-            color: var(--accent-color);
-            font-size: 2.5em;
-            margin-bottom: 30px;
-            animation: fadeInDown 1s ease;
-        }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        input[type="text"] {
-            padding: 10px;
-            width: 300px;
-            border-radius: 5px;
-            border: none;
-            outline: none;
-            background: #222;
-            color: var(--text-color);
-            transition: 0.3s ease;
-        }
-
-        input[type="text"]:focus {
-            box-shadow: 0 0 5px var(--accent-color);
-        }
-
-        button {
-            padding: 10px 15px;
-            margin: 5px;
-            border: none;
-            border-radius: 5px;
-            background: var(--accent-color);
-            color: white;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        button:hover {
-            background: #0097a7;
-        }
-
-        #top-buttons {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        }
-
-        #rules {
-            display: none;
-            background: var(--card-bg);
-            padding: 20px;
-            margin-top: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px var(--shadow);
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            white-space: pre-wrap;
-            animation: fadeIn 0.5s ease;
-        }
-
-        #posts-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 40px;
-            animation: fadeIn 1s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .post {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px var(--shadow);
-            width: 300px;
-            text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: default;
-        }
-
-        .post:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px var(--accent-color);
-        }
-
-        .post img {
-            max-width: 100%;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-
-        #support-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            animation: fadeIn 1s ease;
-        }
-
-        #support-popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 0 20px var(--shadow);
-            z-index: 1001;
-            text-align: center;
-            animation: popupFadeIn 0.4s ease forwards;
-        }
-
-        @keyframes popupFadeIn {
-            from { opacity: 0; transform: translate(-50%, -60%); }
-            to { opacity: 1; transform: translate(-50%, -50%); }
-        }
-
-        #overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: 999;
-            animation: fadeIn 0.4s ease forwards;
-        }
-    </style>
+<meta charset="UTF-8" />
+<title>гой baze</title>
+<style>
+  :root {
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --accent-color: #00bcd4;
+    --card-bg: #1e1e1e;
+    --shadow: rgba(0, 0, 0, 0.4);
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', sans-serif;
+    padding: 40px;
+  }
+  h1 {
+    text-align: center;
+    color: var(--accent-color);
+    margin-bottom: 30px;
+  }
+  #posts-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+  .post {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 10px;
+    width: 300px;
+    box-shadow: 0 0 10px var(--shadow);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    text-align: center;
+  }
+  .post:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px var(--accent-color);
+  }
+  .post-title {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+  }
+  /* Модальное окно */
+  #overlay {
+    display: none;
+    position: fixed;
+    top:0; left:0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+  }
+  #modal {
+    display: none;
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vw;
+    height: 80vh;
+    background: var(--card-bg);
+    border-radius: 15px;
+    box-shadow: 0 0 20px var(--shadow);
+    z-index: 1001;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  #modal iframe {
+    flex-grow: 1;
+    border: none;
+    border-radius: 0 0 15px 15px;
+  }
+  #modal-header {
+    padding: 10px;
+    background: #222;
+    color: var(--text-color);
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 15px 15px 0 0;
+  }
+  #modal-close {
+    cursor: pointer;
+    background: var(--accent-color);
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+  }
+  #modal-close:hover {
+    background: #0097a7;
+  }
+</style>
 </head>
 <body>
-    <div id="top-buttons">
-        <button onclick="toggleRules()">Правила</button>
-    </div>
 
-    <h1>гой baze</h1>
+<h1>гой baze</h1>
 
-    <div style="text-align: center;">
-        <input type="text" id="searchInput" placeholder="Введите слово для поиска" autocomplete="off" />
-    </div>
+<div id="posts-container">
+  <!-- Посты будут тут -->
+</div>
 
-    <div id="rules">
-        <h2>Правила (eula.txt):</h2>
-        <div id="rulesText">Загрузка...</div>
-    </div>
+<div id="overlay"></div>
 
-    <div id="posts-container"></div>
+<div id="modal">
+  <div id="modal-header">
+    <div id="modal-title">Telegraph</div>
+    <button id="modal-close">Закрыть</button>
+  </div>
+  <iframe src="" allowfullscreen></iframe>
+</div>
 
-    <div id="overlay" onclick="closeSupport()"></div>
-    <div id="support-popup">
-        <h2>Поддержка</h2>
-        <p>Тех поддержка сегодня не работает, проверьте завтра.</p>
-        <button onclick="closeSupport()">Закрыть</button>
-    </div>
+<script>
+  const postsContainer = document.getElementById('posts-container');
+  const overlay = document.getElementById('overlay');
+  const modal = document.getElementById('modal');
+  const iframe = modal.querySelector('iframe');
+  const modalTitle = document.getElementById('modal-title');
+  const modalClose = document.getElementById('modal-close');
 
-    <button id="support-button" onclick="openSupport()">Поддержка</button>
+  function openModal(post) {
+    modalTitle.textContent = `Пост №${post.id}`;
+    iframe.src = post.url;
+    overlay.style.display = 'block';
+    modal.style.display = 'flex';
+  }
 
-    <script>
-        const searchInput = document.getElementById('searchInput');
-        const postsContainer = document.getElementById('posts-container');
-        let postsData = [];
+  function closeModal() {
+    overlay.style.display = 'none';
+    modal.style.display = 'none';
+    iframe.src = '';
+  }
 
-        function toggleRules() {
-            const rules = document.getElementById('rules');
-            if (rules.style.display === 'none' || rules.style.display === '') {
-                rules.style.display = 'block';
-                loadRules();
-            } else {
-                rules.style.display = 'none';
-            }
-        }
+  modalClose.addEventListener('click', closeModal);
+  overlay.addEventListener('click', closeModal);
 
-        function openSupport() {
-            document.getElementById('overlay').style.display = 'block';
-            document.getElementById('support-popup').style.display = 'block';
-        }
+  // Рандомизация массива
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
 
-        function closeSupport() {
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('support-popup').style.display = 'none';
-        }
+  // Загрузка posts.json и рендер постов
+  fetch('posts.json')
+    .then(res => res.json())
+    .then(data => {
+      // data - объект с ключами "1", "2" и значениями-ссылками
+      const posts = Object.entries(data).map(([id, url]) => ({id, url}));
+      shuffle(posts);
 
-        async function loadRules() {
-            try {
-                const res = await fetch('eula.txt');
-                const text = await res.text();
-                document.getElementById('rulesText').textContent = text;
-            } catch (e) {
-                document.getElementById('rulesText').textContent = 'Не удалось загрузить правила.';
-            }
-        }
+      for (const post of posts) {
+        const div = document.createElement('div');
+        div.className = 'post';
+        div.innerHTML = `
+          <div class="post-title">Пост №${post.id}</div>
+          <div style="color: var(--accent-color); font-weight: bold;">Читать</div>
+        `;
+        div.addEventListener('click', () => openModal(post));
+        postsContainer.appendChild(div);
+      }
+    })
+    .catch(() => {
+      postsContainer.innerHTML = '<p>Ошибка загрузки постов.</p>';
+    });
+</script>
 
-        async function loadPostsData() {
-            try {
-                const res = await fetch('posts.json');
-                postsData = await res.json();
-
-                // Рандомно перемешать посты
-                for (let i = postsData.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [postsData[i], postsData[j]] = [postsData[j], postsData[i]];
-                }
-
-                displayPosts(postsData);
-            } catch {
-                postsContainer.innerHTML = '<p>Ошибка загрузки постов.</p>';
-            }
-        }
-
-        function displayPosts(posts) {
-            postsContainer.innerHTML = '';
-            for (const post of posts) {
-                const div = document.createElement('div');
-                div.className = 'post';
-                div.innerHTML = `<img src="${post.image}" alt="Пост"><p>${post.text}</p>`;
-                postsContainer.appendChild(div);
-            }
-        }
-
-        function onSearchInput() {
-            const query = searchInput.value.trim().toLowerCase();
-            if (query === '') {
-                displayPosts(postsData);
-                return;
-            }
-
-            const filtered = postsData.filter(post => post.text.toLowerCase().includes(query));
-            if (filtered.length === 0) {
-                postsContainer.innerHTML = '<p>Ничего не найдено.</p>';
-            } else {
-                displayPosts(filtered);
-            }
-        }
-
-        searchInput.addEventListener('input', onSearchInput);
-
-        loadPostsData();
-    </script>
 </body>
 </html>
