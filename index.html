@@ -1,127 +1,261 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<title>гой baze</title>
-<style>
-  :root {
-    --bg-color: #121212;
-    --text-color: #e0e0e0;
-    --accent-color: #00bcd4;
-    --card-bg: #1e1e1e;
-    --shadow: rgba(0, 0, 0, 0.4);
-  }
-  body {
-    background: var(--bg-color);
-    color: var(--text-color);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 40px;
-  }
-  h1 {
-    text-align: center;
-    color: var(--accent-color);
-    margin-bottom: 30px;
-  }
-  button {
-    background-color: var(--accent-color);
-    border: none;
-    border-radius: 5px;
-    color: white;
-    padding: 10px 15px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-bottom: 20px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  button:hover {
-    background-color: #0097a7;
-  }
-  #rules {
-    max-width: 600px;
-    margin: 0 auto 40px auto;
-    background: var(--card-bg);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px var(--shadow);
-    white-space: pre-wrap;
-    display: none;
-  }
-  #posts-container {
-    max-width: 600px;
-    margin: 0 auto;
-    background: var(--card-bg);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px var(--shadow);
-  }
-  #posts-container div {
-    margin-bottom: 15px;
-  }
-  #posts-container a {
-    color: var(--accent-color);
-    text-decoration: none;
-    word-break: break-all;
-  }
-  #posts-container a:hover {
-    text-decoration: underline;
-  }
-</style>
+    <meta charset="UTF-8" />
+    <title>гой baze</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --accent-color: #00bcd4;
+            --card-bg: #1e1e1e;
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            padding: 40px 20px 120px 20px;
+            overflow-x: hidden;
+        }
+        h1 {
+            text-align: center;
+            color: var(--accent-color);
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            animation: fadeInDown 1s ease;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background: var(--accent-color);
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #0097a7;
+        }
+        #top-buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        #rules {
+            display: none;
+            background: var(--card-bg);
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px var(--shadow);
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        #posts-list {
+            max-width: 600px;
+            margin: 30px auto 10px auto;
+            text-align: center;
+        }
+        #posts-list div {
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 10px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 0 6px var(--shadow);
+            transition: background 0.3s ease;
+        }
+        #posts-list div:hover {
+            background: #007a8c;
+        }
+        #post-frame-container {
+            max-width: 800px;
+            margin: 30px auto;
+            height: 600px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 0 20px var(--shadow);
+            overflow: hidden;
+            position: relative;
+        }
+        #post-frame-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        #post-error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #f44336;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+        }
+        #support-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        #support-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px var(--shadow);
+            z-index: 1001;
+            text-align: center;
+            max-width: 300px;
+        }
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.4);
+            z-index: 999;
+        }
+    </style>
 </head>
 <body>
 
-<h1>гой baze</h1>
+    <div id="top-buttons">
+        <button onclick="toggleRules()">Правила</button>
+    </div>
 
-<button onclick="toggleRules()">Показать / Скрыть правила</button>
+    <h1>гой baze</h1>
 
-<div id="rules">Загрузка правил...</div>
+    <div id="rules">
+        <h2>Правила (eula.txt):</h2>
+        <div id="rulesText">Загрузка...</div>
+    </div>
 
-<div id="posts-container">Загрузка постов...</div>
+    <div id="posts-list">
+        <p>Загрузка постов...</p>
+    </div>
+
+    <div id="post-frame-container"></div>
+
+    <div id="overlay" onclick="closeSupport()"></div>
+    <div id="support-popup">
+        <h2>Поддержка</h2>
+        <p>Тех поддержка сегодня не работает, проверьте завтра.</p>
+        <button onclick="closeSupport()">Закрыть</button>
+    </div>
+
+    <button id="support-button" onclick="openSupport()">Поддержка</button>
 
 <script>
-async function loadRules() {
-  try {
-    const res = await fetch('eula.txt');
-    if (!res.ok) throw new Error('Ошибка HTTP ' + res.status);
-    const text = await res.text();
-    document.getElementById('rules').textContent = text;
-  } catch (e) {
-    document.getElementById('rules').textContent = 'Ошибка загрузки правил: ' + e.message;
-  }
-}
+    // Показ/скрытие правил
+    function toggleRules() {
+        const rules = document.getElementById('rules');
+        if (rules.style.display === 'none' || rules.style.display === '') {
+            rules.style.display = 'block';
+            loadRules();
+        } else {
+            rules.style.display = 'none';
+        }
+    }
 
-function toggleRules() {
-  const rulesDiv = document.getElementById('rules');
-  if (rulesDiv.style.display === 'none' || rulesDiv.style.display === '') {
-    rulesDiv.style.display = 'block';
-    loadRules();
-  } else {
-    rulesDiv.style.display = 'none';
-  }
-}
+    async function loadRules() {
+        try {
+            const res = await fetch('eula.txt');
+            const text = await res.text();
+            document.getElementById('rulesText').textContent = text;
+        } catch (e) {
+            document.getElementById('rulesText').textContent = 'Не удалось загрузить правила.';
+        }
+    }
 
-async function loadPosts() {
-  try {
-    const res = await fetch('posts.json');
-    if (!res.ok) throw new Error('Ошибка HTTP ' + res.status);
-    const posts = await res.json();
+    // Поддержка попап
+    function openSupport() {
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('support-popup').style.display = 'block';
+    }
+    function closeSupport() {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('support-popup').style.display = 'none';
+    }
 
-    const container = document.getElementById('posts-container');
-    container.innerHTML = '';
+    // Отобразить пост в iframe
+    function showPost(link) {
+        const container = document.getElementById('post-frame-container');
+        container.innerHTML = ''; // очистить
 
-    posts.forEach(post => {
-      const div = document.createElement('div');
-      div.innerHTML = `Папка ${post.folder}: <a href="${post.link}" target="_blank" rel="noopener noreferrer">${post.link}</a>`;
-      container.appendChild(div);
-    });
-  } catch (e) {
-    document.getElementById('posts-container').textContent = 'Ошибка загрузки постов: ' + e.message;
-  }
-}
+        const iframe = document.createElement('iframe');
+        iframe.src = link;
+        iframe.onload = () => {
+            const errDiv = document.getElementById('post-error');
+            if(errDiv) errDiv.remove();
+        };
+        iframe.onerror = () => {
+            const errDiv = document.createElement('div');
+            errDiv.id = 'post-error';
+            errDiv.textContent = 'Не удалось загрузить содержимое telegraph (возможно, сайт блокирует встраивание).';
+            container.appendChild(errDiv);
+        };
 
-loadPosts();
+        container.appendChild(iframe);
+        // Прокрутка к iframe
+        iframe.scrollIntoView({behavior: "smooth"});
+    }
+
+    // Загрузка постов из posts.json
+    async function loadPosts() {
+        const list = document.getElementById('posts-list');
+        list.innerHTML = '<p>Загрузка постов...</p>';
+
+        try {
+            const res = await fetch('posts.json');
+            const posts = await res.json();
+
+            if(posts.length === 0){
+                list.innerHTML = '<p>Посты не найдены.</p>';
+                return;
+            }
+
+            // Рандомный порядок
+            for (let i = posts.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [posts[i], posts[j]] = [posts[j], posts[i]];
+            }
+
+            list.innerHTML = '';
+            posts.forEach(post => {
+                const div = document.createElement('div');
+                div.textContent = `Пост ${post.folder}`;
+                div.title = post.link;
+                div.onclick = () => showPost(post.link);
+                list.appendChild(div);
+            });
+        } catch(e) {
+            list.innerHTML = '<p>Ошибка загрузки постов.</p>';
+        }
+    }
+
+    loadPosts();
 </script>
 
 </body>
