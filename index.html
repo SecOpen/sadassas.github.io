@@ -186,13 +186,22 @@
     }
 
     function extractImage(content) {
+      if (!content) return '';
+    
       for (const node of content) {
         if (node.tag === 'img' && node.attrs?.src) {
           return 'https://telegra.ph' + node.attrs.src;
         }
+    
+        if (node.children && Array.isArray(node.children)) {
+          const childImage = extractImage(node.children);
+          if (childImage) return childImage;
+        }
       }
+    
       return '';
     }
+
 
     function extractText(content) {
       for (const node of content) {
