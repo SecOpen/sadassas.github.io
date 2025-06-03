@@ -260,7 +260,8 @@ function extractFirstImage(content) {
 
   for (const el of content) {
     if (el.tag === 'img' && el.attrs?.src) {
-      return 'https://telegra.ph' + el.attrs.src;
+      const src = el.attrs.src;
+      return src.startsWith('http') ? src : 'https://telegra.ph' + src;
     }
 
     if (el.children && Array.isArray(el.children)) {
@@ -271,6 +272,7 @@ function extractFirstImage(content) {
 
   return null;
 }
+
 
 
     function displayPosts(posts) {
