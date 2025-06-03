@@ -8,11 +8,10 @@
     :root {
       --bg: #121212;
       --text: #eee;
-      --accent: #00bcd4;
+      --accent: #e53935; /* красный акцент */
       --card: #1e1e1e;
       --shadow: rgba(0, 0, 0, 0.4);
     }
-
     * { box-sizing: border-box; }
 
     body {
@@ -21,6 +20,12 @@
       background: var(--bg);
       color: var(--text);
       padding: 40px 20px;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     h1 {
@@ -38,6 +43,12 @@
       border-radius: 5px;
       background: #222;
       color: var(--text);
+      transition: box-shadow 0.3s, border 0.3s;
+    }
+    #searchInput:focus {
+      box-shadow: 0 0 5px var(--accent);
+      border: 1px solid var(--accent);
+      outline: none;
     }
 
     #posts-container {
@@ -55,11 +66,11 @@
       width: 300px;
       cursor: pointer;
       box-shadow: 0 0 10px var(--shadow);
-      transition: transform 0.2s;
+      transition: transform 0.3s, box-shadow 0.3s;
     }
-
     .post:hover {
-      transform: translateY(-5px);
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 4px 15px var(--shadow);
     }
 
     .post img {
@@ -98,6 +109,13 @@
       max-height: 90%;
       overflow: auto;
       text-align: center;
+      transform: translateY(-30px);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    #modal[style*="display: flex"] #modal-content {
+      transform: translateY(0);
+      opacity: 1;
     }
 
     #modal-content img {
@@ -115,6 +133,9 @@
       border-radius: 5px;
       cursor: pointer;
     }
+    #closeModal:hover {
+      background: #c62828;
+    }
 
     #support-btn {
       position: fixed;
@@ -126,6 +147,11 @@
       border-radius: 10px;
       color: white;
       z-index: 1001;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    #support-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 2px 10px rgba(229, 57, 53, 0.7);
     }
 
     #rules-btn {
@@ -138,6 +164,11 @@
       border-radius: 10px;
       color: white;
       z-index: 1001;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    #rules-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 2px 10px rgba(229, 57, 53, 0.7);
     }
 
     #support-popup, #rules-popup {
@@ -188,13 +219,11 @@
 
   <script>
     let allPosts = [];
-
     function nodeToText(node) {
       if (typeof node === 'string') return node;
       if (Array.isArray(node.children)) return node.children.map(nodeToText).join('');
       return '';
     }
-
     function extractImage(content) {
       for (const node of content) {
         if (node.tag === 'img' && node.attrs?.src) {
@@ -210,7 +239,6 @@
       }
       return '';
     }
-
     function extractText(content) {
       for (const node of content) {
         if (node.tag === 'p' && node.children) {
@@ -219,44 +247,35 @@
       }
       return '';
     }
-
     async function loadPosts() {
       const container = document.getElementById('posts-container');
       container.textContent = 'Загрузка...';
-
       try {
         const posts = await fetch('posts.json?nocache=' + Date.now()).then(r => r.json());
         allPosts = [];
-
         for (const post of posts) {
           const url = post.link;
           const path = url.split('telegra.ph/')[1];
-
           try {
             const apiRes = await fetch(`https://api.telegra.ph/getPage/${path}?return_content=true`);
             const data = await apiRes.json();
             if (!data.ok) continue;
-
             const page = data.result;
             const img = extractImage(page.content);
             const desc = extractText(page.content);
-
             allPosts.push({
               title: page.title,
               description: desc || 'Без описания',
               image: img,
               full: page
             });
-
           } catch (e) { console.warn('Ошибка поста:', url, e); }
         }
-
         displayPosts(allPosts);
       } catch (e) {
         container.textContent = 'Ошибка загрузки постов.';
       }
     }
-
     function displayPosts(posts) {
       const container = document.getElementById('posts-container');
       container.innerHTML = '';
@@ -264,16 +283,13 @@
         const div = document.createElement('div');
         div.className = 'post';
         div.onclick = () => openModal(post);
-
-        div.innerHTML = `
-          ${post.image ? `<img src="${post.image}" alt="">` : ''}
-          <div class="post-title">${post.title}</div>
-          <div class="post-desc">${post.description}</div>
-        `;
+        div.innerHTML =
+          (post.image ? `<img src="${post.image}" alt="">` : '') +
+          `<div class="post-title">${post.title}</div>` +
+          `<div class="post-desc">${post.description}</div>`;
         container.appendChild(div);
       });
     }
-
     function searchPosts() {
       const query = document.getElementById('searchInput').value.toLowerCase();
       const results = allPosts.filter(post =>
@@ -282,40 +298,32 @@
       );
       displayPosts(results);
     }
-
     function openModal(post) {
       const modal = document.getElementById('modal');
       const body = document.getElementById('modal-body');
-      body.innerHTML = `
-        <h2>${post.title}</h2>
-        ${post.image ? `<img src="${post.image}" alt="">` : ''}
-        <p>${post.description}</p>
-      `;
+      body.innerHTML =
+        `<h2>${post.title}</h2>` +
+        (post.image ? `<img src="${post.image}" alt="">` : '') +
+        `<p>${post.description}</p>`;
       modal.style.display = 'flex';
     }
-
     function closeModal(e) {
       if (e.target.id === 'modal' || e.target.id === 'closeModal') {
         document.getElementById('modal').style.display = 'none';
       }
     }
-
     function openSupport() {
       document.getElementById('support-popup').style.display = 'block';
     }
-
     function closeSupport() {
       document.getElementById('support-popup').style.display = 'none';
     }
-
     function openRules() {
       document.getElementById('rules-popup').style.display = 'block';
     }
-
     function closeRules() {
       document.getElementById('rules-popup').style.display = 'none';
     }
-
     loadPosts();
   </script>
 </body>
