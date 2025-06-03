@@ -38,19 +38,28 @@
     border-radius: 10px;
     width: 300px;
     box-shadow: 0 0 10px var(--shadow);
-    cursor: pointer;
-    transition: transform 0.3s ease;
+    cursor: default;
     text-align: center;
-  }
-  .post:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px var(--accent-color);
   }
   .post-title {
     font-size: 1.1em;
     margin-bottom: 10px;
   }
-  /* Модальное окно */
+  button.read-btn {
+    background: var(--accent-color);
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s ease;
+  }
+  button.read-btn:hover {
+    background: #0097a7;
+  }
+
+  /* Модальное окно с предупреждением */
   #overlay {
     display: none;
     position: fixed;
@@ -64,41 +73,27 @@
     position: fixed;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 80vw;
-    height: 80vh;
+    width: 400px;
     background: var(--card-bg);
     border-radius: 15px;
     box-shadow: 0 0 20px var(--shadow);
     z-index: 1001;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-  #modal iframe {
-    flex-grow: 1;
-    border: none;
-    border-radius: 0 0 15px 15px;
-  }
-  #modal-header {
-    padding: 10px;
-    background: #222;
+    padding: 20px;
     color: var(--text-color);
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-radius: 15px 15px 0 0;
+    text-align: center;
   }
-  #modal-close {
-    cursor: pointer;
+  #modal button {
+    margin-top: 15px;
     background: var(--accent-color);
     border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
+    padding: 10px 20px;
+    border-radius: 8px;
     color: white;
+    cursor: pointer;
     font-weight: bold;
+    transition: background 0.3s ease;
   }
-  #modal-close:hover {
+  #modal button:hover {
     background: #0097a7;
   }
 </style>
@@ -112,35 +107,37 @@
 <div id="overlay"></div>
 
 <div id="modal">
-  <div id="modal-header">
-    <div id="modal-title">Telegraph</div>
-    <button id="modal-close">Закрыть</button>
-  </div>
-  <iframe src="" allowfullscreen></iframe>
+  <p>Сайт telegra.ph заблокирован.<br>Откройте пост в новой вкладке, если хотите прочитать.</p>
+  <button id="open-new-tab">Открыть в новой вкладке</button><br>
+  <button id="modal-close">Закрыть</button>
 </div>
 
 <script>
   const postsContainer = document.getElementById('posts-container');
   const overlay = document.getElementById('overlay');
   const modal = document.getElementById('modal');
-  const iframe = modal.querySelector('iframe');
-  const modalTitle = document.getElementById('modal-title');
-  const modalClose = document.getElementById('modal-close');
+  const openNewTabBtn = document.getElementById('open-new-tab');
+  const modalCloseBtn = document.getElementById('modal-close');
 
-  function openModal(post) {
-    modalTitle.textContent = `Пост №${post.id}`;
-    iframe.src = post.url;
+  let currentUrl = '';
+
+  function openModal(url) {
+    currentUrl = url;
     overlay.style.display = 'block';
-    modal.style.display = 'flex';
+    modal.style.display = 'block';
   }
 
   function closeModal() {
     overlay.style.display = 'none';
     modal.style.display = 'none';
-    iframe.src = '';
+    currentUrl = '';
   }
 
-  modalClose.addEventListener('click', closeModal);
+  openNewTabBtn.addEventListener('click', () => {
+    if(currentUrl) window.open(currentUrl, '_blank', 'noopener');
+  });
+
+  modalCloseBtn.addEventListener('click', closeModal);
   overlay.addEventListener('click', closeModal);
 
   function shuffle(array) {
@@ -161,9 +158,9 @@
         div.className = 'post';
         div.innerHTML = `
           <div class="post-title">Пост №${post.id}</div>
-          <div style="color: var(--accent-color); font-weight: bold;">Читать</div>
+          <button class="read-btn">Читать</button>
         `;
-        div.addEventListener('click', () => openModal(post));
+        div.querySelector('button.read-btn').addEventListener('click', () => openModal(post.url));
         postsContainer.appendChild(div);
       }
     })
