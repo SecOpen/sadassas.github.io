@@ -218,62 +218,71 @@
 
   // Загрузка и показ постов
   async function loadPosts() {
-    const container = document.getElementById('posts-container');
-    container.textContent = 'Загрузка...';
+  const container = document.getElementById('posts-container');
+  container.textContent = 'Загрузка...';
 
-    try {
-      const res = await fetch('posts.json');
-      const urls = await res.json();
+  try {
+    const posts = await fetch('posts.json').then(r => r.json());
 
-      container.textContent = '';
+    container.textContent = '';
 
-      for (const url of urls) {
-        try {
-          const path = url.split('telegra.ph/')[1];
-          if (!path) continue;
+    for (const post of posts) {
+      const url = post.link;
+      console.log('Обрабатываем ссылку:', url);
 
-          const apiRes = await fetch(`https://api.telegra.ph/getPage/${path}?return_content=true`);
-          const data = await apiRes.json();
+      if (typeof url !== 'string') {
+        console.warn('URL не строка:', url);
+        continue;
+      }
 
-          if (data.ok && data.result) {
-            const page = data.result;
+      const parts = url.split('telegra.ph/');
+      if (parts.length < 2) {
+        console.warn('Не удалось получить path из url:', url);
+        continue;
+      }
+      const path = parts[1];
+      console.log('path для API:', path);
 
-            const article = document.createElement('article');
-
-            // Заголовок
-            const h1 = document.createElement('h1');
-            h1.textContent = page.title || 'Без заголовка';
-            article.appendChild(h1);
-
-            // Контент
-            if (page.content && Array.isArray(page.content)) {
-              page.content.forEach(node => {
-                article.appendChild(nodeToDom(node));
-              });
-            } else {
-              const p = document.createElement('p');
-              p.textContent = 'Нет содержимого.';
-              article.appendChild(p);
-            }
-
-            container.appendChild(article);
-          } else {
-            console.warn('Ошибка при получении страницы:', url);
-          }
-        } catch(e) {
-          console.error('Ошибка загрузки поста:', url, e);
+      try {
+        const apiRes = await fetch(`https://api.telegra.ph/getPage/${path}?return_content=true`);
+        const data = await apiRes.json();
+        if (!data.ok) {
+          console.warn('API вернул ошибку для', url, data);
+          continue;
         }
-      }
+        const page = data.result;
 
-      if (container.children.length === 0) {
-        container.textContent = 'Посты не найдены.';
+        const article = document.createElement('article');
+
+        const h1 = document.createElement('h1');
+        h1.textContent = page.title || 'Без заголовка';
+        article.appendChild(h1);
+
+        if (page.content && Array.isArray(page.content)) {
+          page.content.forEach(node => {
+            article.appendChild(nodeToDom(node));
+          });
+        } else {
+          const p = document.createElement('p');
+          p.textContent = 'Нет содержимого.';
+          article.appendChild(p);
+        }
+
+        container.appendChild(article);
+
+      } catch (e) {
+        console.error('Ошибка при загрузке поста', url, e);
       }
-    } catch(e) {
-      container.textContent = 'Ошибка загрузки списка постов.';
-      console.error(e);
     }
-  }
 
+    if (container.children.length === 0) {
+      container.textContent = 'Посты не найдены.';
+    }
+  } catch (e) {
+    container.textContent = 'Ошибка загрузки списка постов.';
+    console.error(e);
+  }
+}
   loadPosts();
 </script>
 
