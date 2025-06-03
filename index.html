@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>гой baze</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store" />
   <style>
     :root {
       --bg: #121212;
@@ -56,7 +57,6 @@
       cursor: pointer;
       box-shadow: 0 0 10px var(--shadow);
       transition: transform 0.2s;
-      text-align: center;
     }
 
     .post:hover {
@@ -117,19 +117,28 @@
       cursor: pointer;
     }
 
-    #support-btn {
+    #support-btn, #rules-btn {
       position: fixed;
-      right: 20px;
-      bottom: 20px;
       background: var(--accent);
       border: none;
       padding: 10px 15px;
       border-radius: 10px;
       color: white;
       z-index: 1001;
+      cursor: pointer;
     }
 
-    #support-popup {
+    #support-btn {
+      bottom: 20px;
+      right: 20px;
+    }
+
+    #rules-btn {
+      top: 20px;
+      right: 20px;
+    }
+
+    #support-popup, #rules-popup {
       display: none;
       position: fixed;
       top: 50%; left: 50%;
@@ -140,6 +149,8 @@
       z-index: 1002;
       text-align: center;
       color: white;
+      max-width: 90%;
+      box-shadow: 0 0 20px var(--shadow);
     }
 
     @media(max-width: 600px) {
@@ -152,10 +163,10 @@
   <h1>гой baze</h1>
 
   <div style="text-align:center;">
-    <input type="text" id="searchInput" placeholder="Поиск..." oninput="searchPosts()">
+    <input type="text" id="searchInput" placeholder="Поиск по названию или описанию..." oninput="searchPosts()">
   </div>
 
-  <div id="posts-container"></div>
+  <div id="posts-container">Загрузка...</div>
 
   <div id="modal" onclick="closeModal(event)">
     <div id="modal-content">
@@ -170,71 +181,86 @@
     <button onclick="closeSupport()">Ок</button>
   </div>
 
+  <button id="rules-btn" onclick="openRules()">Правила</button>
+  <div id="rules-popup">
+    <h2>Правила</h2>
+    <p>1. Будь человеком.<br>2. Не нарушай законы.<br>3. Не спамь.</p>
+    <button onclick="closeRules()">Ок</button>
+  </div>
+
   <script>
     let allPosts = [];
 
-    function nodeToText(node) {
-      if (!node) return '';
-      if (typeof node === 'string') return node;
-      if (node.tag === 'img') return '';
-      let inner = (node.children || []).map(nodeToText).join('');
-      return inner || '';
-    }
-
-    function extractImage(content) {
-      const imgNode = content?.find(n => n.tag === 'img' && n.attrs?.src);
-      return imgNode ? imgNode.attrs.src : null;
-    }
-
-async function loadPosts() {
-  const container = document.getElementById('posts-container');
-  container.textContent = 'Загрузка...';
-
-  try {
-    // Добавим метку времени в URL, чтобы кэш не использовался
-    const res = await fetch('posts.json?nocache=' + Date.now());
-    const posts = await res.json();
-
-    const fullPosts = [];
-
-    for (const post of posts) {
-      const url = post.link;
-      if (!url || typeof url !== 'string') continue;
-
-      const parts = url.split('telegra.ph/');
-      if (parts.length < 2) continue;
-
-      const path = parts[1];
+    async function loadPosts() {
+      const container = document.getElementById('posts-container');
+      container.textContent = 'Загрузка...';
 
       try {
-        const apiRes = await fetch(`https://api.telegra.ph/getPage/${path}?return_content=true`);
-        const data = await apiRes.json();
-        if (!data.ok) continue;
+        const res = await fetch('posts.json?nocache=' + Date.now());
+        const posts = await res.json();
+        const fullPosts = [];
 
-        const title = data.result.title || 'Без названия';
-        const description = extractText(data.result.content).slice(0, 160) + '...';
+        for (const post of posts) {
+          const url = post.link;
+          if (!url || typeof url !== 'string') continue;
 
-        // Найдём первую картинку (если есть)
-        const image = extractFirstImage(data.result.content);
+          const parts = url.split('telegra.ph/');
+          if (parts.length < 2) continue;
 
-        fullPosts.push({ title, description, image, content: data.result });
+          const path = parts[1];
+
+          try {
+            const apiRes = await fetch(`https://api.telegra.ph/getPage/${path}?return_content=true`);
+            const data = await apiRes.json();
+            if (!data.ok) continue;
+
+            const title = data.result.title || 'Без названия';
+            const description = extractText(data.result.content).slice(0, 160) + '...';
+            const image = extractFirstImage(data.result.content);
+
+            fullPosts.push({ title, description, image, content: data.result });
+          } catch (err) {
+            console.warn('Ошибка загрузки поста:', err);
+          }
+        }
+
+        allPosts = fullPosts;
+        displayPosts(allPosts);
+        if (allPosts.length === 0) container.textContent = 'Посты не найдены.';
+
       } catch (err) {
-        console.warn('Ошибка загрузки с Telegraph:', err);
+        console.error('Ошибка загрузки:', err);
+        container.textContent = 'Ошибка загрузки постов.';
       }
     }
 
-    allPosts = fullPosts;
-    displayPosts(allPosts);
-
-    if (allPosts.length === 0) {
-      container.textContent = 'Посты не найдены.';
+    function extractText(content) {
+      let text = '';
+      content.forEach(el => {
+        if (el.tag === 'p' && el.children) {
+          el.children.forEach(child => {
+            if (typeof child === 'string') text += child + ' ';
+            if (typeof child === 'object' && child.tag === 'strong') {
+              child.children?.forEach(sub => text += sub + ' ');
+            }
+          });
+        }
+      });
+      return text.trim();
     }
-  } catch (err) {
-    console.error('Ошибка загрузки:', err);
-    container.textContent = 'Ошибка загрузки постов.';
-  }
-}
 
+    function extractFirstImage(content) {
+      for (const el of content) {
+        if (el.tag === 'img' && el.attrs?.src) {
+          return 'https://telegra.ph' + el.attrs.src;
+        }
+        if (el.children) {
+          const childImage = extractFirstImage(el.children);
+          if (childImage) return childImage;
+        }
+      }
+      return null;
+    }
 
     function displayPosts(posts) {
       const container = document.getElementById('posts-container');
@@ -243,8 +269,9 @@ async function loadPosts() {
         const div = document.createElement('div');
         div.className = 'post';
         div.onclick = () => openModal(post);
+
         div.innerHTML = `
-          ${post.image ? `<img src="${post.image}" alt="">` : ''}
+          ${post.image ? `<img src="${post.image}" alt="Image">` : ''}
           <div class="post-title">${post.title}</div>
           <div class="post-desc">${post.description}</div>
         `;
@@ -261,12 +288,6 @@ async function loadPosts() {
       displayPosts(results);
     }
 
-    function closeModal(e) {
-      if (e.target.id === 'modal' || e.target.id === 'closeModal') {
-        document.getElementById('modal').style.display = 'none';
-      }
-    }
-
     function openModal(post) {
       const modal = document.getElementById('modal');
       const body = document.getElementById('modal-body');
@@ -278,6 +299,12 @@ async function loadPosts() {
       modal.style.display = 'flex';
     }
 
+    function closeModal(e) {
+      if (e.target.id === 'modal' || e.target.id === 'closeModal') {
+        document.getElementById('modal').style.display = 'none';
+      }
+    }
+
     function openSupport() {
       document.getElementById('support-popup').style.display = 'block';
     }
@@ -286,7 +313,16 @@ async function loadPosts() {
       document.getElementById('support-popup').style.display = 'none';
     }
 
+    function openRules() {
+      document.getElementById('rules-popup').style.display = 'block';
+    }
+
+    function closeRules() {
+      document.getElementById('rules-popup').style.display = 'none';
+    }
+
     loadPosts();
   </script>
+
 </body>
 </html>
