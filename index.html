@@ -215,7 +215,10 @@
             if (!data.ok) continue;
 
             const title = data.result.title || 'Без названия';
-            const description = extractText(data.result.content).slice(0, 160) + '...';
+            let desc = extractText(data.result.content).slice(0, 160);
+            if (desc.length === 160) desc += '…'; // добавим троеточие только если текст обрезан
+            const description = desc;
+
             const image = extractFirstImage(data.result.content);
 
             fullPosts.push({ title, description, image, content: data.result });
@@ -234,33 +237,41 @@
       }
     }
 
-    function extractText(content) {
-      let text = '';
-      content.forEach(el => {
-        if (el.tag === 'p' && el.children) {
-          el.children.forEach(child => {
-            if (typeof child === 'string') text += child + ' ';
-            if (typeof child === 'object' && child.tag === 'strong') {
-              child.children?.forEach(sub => text += sub + ' ');
-            }
+function extractText(content) {
+  let text = '';
+  content.forEach(el => {
+    if (el.tag === 'p' && el.children) {
+      el.children.forEach(child => {
+        if (typeof child === 'string') text += child + ' ';
+        else if (typeof child === 'object' && child.children) {
+          child.children.forEach(sub => {
+            if (typeof sub === 'string') text += sub + ' ';
           });
         }
       });
-      return text.trim();
+    }
+  });
+  return text.trim();
+}
+
+
+function extractFirstImage(content) {
+  if (!content) return null;
+
+  for (const el of content) {
+    if (el.tag === 'img' && el.attrs?.src) {
+      return 'https://telegra.ph' + el.attrs.src;
     }
 
-    function extractFirstImage(content) {
-      for (const el of content) {
-        if (el.tag === 'img' && el.attrs?.src) {
-          return 'https://telegra.ph' + el.attrs.src;
-        }
-        if (el.children) {
-          const childImage = extractFirstImage(el.children);
-          if (childImage) return childImage;
-        }
-      }
-      return null;
+    if (el.children && Array.isArray(el.children)) {
+      const childImage = extractFirstImage(el.children);
+      if (childImage) return childImage;
     }
+  }
+
+  return null;
+}
+
 
     function displayPosts(posts) {
       const container = document.getElementById('posts-container');
