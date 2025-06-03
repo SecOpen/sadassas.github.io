@@ -4,21 +4,17 @@
   <meta charset="UTF-8">
   <title>гой baze</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Cache-Control" content="no-store" />
   <style>
     :root {
-      --bg: #181818;
-      --text: #f1f1f1;
+      --bg: #121212;
+      --text: #eee;
       --accent: #00bcd4;
-      --card: #252525;
-      --shadow: rgba(0, 0, 0, 0.5);
-      --border: #333;
+      --card: #1e1e1e;
+      --shadow: rgba(0, 0, 0, 0.4);
     }
-    
-    * {
-      box-sizing: border-box;
-    }
-    
+
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -26,26 +22,24 @@
       color: var(--text);
       padding: 40px 20px;
     }
-    
+
     h1 {
       text-align: center;
       color: var(--accent);
       font-size: 2.5em;
       margin-bottom: 30px;
-      text-shadow: 1px 1px 2px black;
     }
-    
+
     #searchInput {
-      padding: 12px;
+      padding: 10px;
       width: 90%;
       max-width: 400px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: #202020;
+      border: none;
+      border-radius: 5px;
+      background: #222;
       color: var(--text);
-      font-size: 1em;
     }
-    
+
     #posts-container {
       margin-top: 30px;
       display: flex;
@@ -53,92 +47,78 @@
       justify-content: center;
       gap: 20px;
     }
-    
+
     .post {
       background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 10px;
       padding: 15px;
-      width: 280px;
+      width: 300px;
       cursor: pointer;
-      box-shadow: 0 4px 15px var(--shadow);
-      transition: transform 0.2s, box-shadow 0.2s;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      box-shadow: 0 0 10px var(--shadow);
+      transition: transform 0.2s;
     }
-    
+
     .post:hover {
       transform: translateY(-5px);
-      box-shadow: 0 6px 20px var(--shadow);
     }
-    
+
     .post img {
       width: 100%;
-      height: 160px;
+      max-height: 200px;
       object-fit: cover;
       border-radius: 10px;
       margin-bottom: 10px;
     }
-    
+
     .post-title {
-      font-size: 1.1em;
+      font-size: 1.2em;
       color: var(--accent);
-      margin-bottom: 5px;
-      text-align: center;
     }
-    
+
     .post-desc {
       font-size: 0.95em;
-      color: #bbb;
-      text-align: center;
+      color: #ccc;
     }
-    
+
     #modal {
       display: none;
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.85);
+      background: rgba(0,0,0,0.8);
       justify-content: center;
       align-items: center;
       z-index: 1000;
     }
-    
+
     #modal-content {
       background: var(--card);
       color: var(--text);
       padding: 30px;
-      border-radius: 12px;
+      border-radius: 10px;
       max-width: 90%;
       max-height: 90%;
       overflow: auto;
       text-align: center;
-      border: 1px solid var(--border);
     }
-    
+
     #modal-content img {
       max-width: 100%;
-      max-height: 400px;
       border-radius: 10px;
       margin-bottom: 20px;
-      object-fit: contain;
     }
-    
+
     #closeModal {
       margin-top: 15px;
       background: var(--accent);
       border: none;
       padding: 10px 15px;
       color: white;
-      border-radius: 8px;
+      border-radius: 5px;
       cursor: pointer;
-      font-size: 1em;
-      box-shadow: 0 2px 6px var(--shadow);
     }
-    
-    #support-btn,
-    #rules-btn {
+
+    #support-btn, #rules-btn {
       position: fixed;
       background: var(--accent);
       border: none;
@@ -146,48 +126,30 @@
       border-radius: 10px;
       color: white;
       z-index: 1001;
-      font-weight: bold;
       cursor: pointer;
-      box-shadow: 0 2px 6px var(--shadow);
-      font-size: 0.9em;
     }
-    
-    #support-btn {
-      right: 20px;
-      bottom: 20px;
-    }
-    
-    #rules-btn {
-      right: 20px;
-      top: 20px;
-    }
-    
-    #support-popup {
+
+    #support-btn { right: 20px; bottom: 20px; }
+    #rules-btn { right: 20px; top: 20px; }
+
+    #support-popup, #rules-popup {
       display: none;
       position: fixed;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       background: var(--card);
-      padding: 20px;
+      padding: 20px 30px;
       border-radius: 10px;
       z-index: 1002;
       text-align: center;
       color: white;
-      border: 1px solid var(--border);
-    }
-    
-    @media(max-width: 600px) {
-      .post {
-        width: 90%;
-      }
-      .post img {
-        height: 140px;
-      }
-      #modal-content img {
-        max-height: 250px;
-      }
+      max-width: 90%;
+      box-shadow: 0 5px 15px var(--shadow);
     }
 
+    @media(max-width: 600px) {
+      .post { width: 90%; }
+    }
   </style>
 </head>
 <body>
@@ -198,7 +160,7 @@
     <input type="text" id="searchInput" placeholder="Поиск по названию или описанию..." oninput="searchPosts()">
   </div>
 
-  <div id="posts-container">Загрузка...</div>
+  <div id="posts-container"></div>
 
   <div id="modal" onclick="closeModal(event)">
     <div id="modal-content">
@@ -213,11 +175,16 @@
     <button onclick="closeSupport()">Ок</button>
   </div>
 
-  <button id="rules-btn" onclick="openRules()">Правила</button>
+  <button id="rules-btn">Правила</button>
   <div id="rules-popup">
     <h2>Правила</h2>
-    <p>1. Будь человеком.<br>2. Не нарушай законы.<br>3. Не спамь.</p>
-    <button onclick="closeRules()">Ок</button>
+    <ul style="text-align:left; max-width:400px; margin:0 auto;">
+      <li>Не нарушай.</li>
+      <li>Не спамь.</li>
+      <li>Уважай других.</li>
+      <li>Контент должен быть по теме.</li>
+    </ul>
+    <button onclick="document.getElementById('rules-popup').style.display='none'">Закрыть</button>
   </div>
 
   <script>
@@ -228,84 +195,42 @@
       container.textContent = 'Загрузка...';
 
       try {
-        const res = await fetch('posts.json?nocache=' + Date.now());
-        const posts = await res.json();
-        const fullPosts = [];
+        const posts = await fetch('posts.json?nocache=' + Date.now()).then(r => r.json());
+        allPosts = [];
+
+        container.innerHTML = '';
 
         for (const post of posts) {
           const url = post.link;
-          if (!url || typeof url !== 'string') continue;
+          const path = url.split('telegra.ph/')[1];
 
-          const parts = url.split('telegra.ph/');
-          if (parts.length < 2) continue;
+          if (!path) continue;
 
-          const path = parts[1];
+          const apiRes = await fetch(`https://api.telegra.ph/getPage/${path}?return_content=true`);
+          const data = await apiRes.json();
+          if (!data.ok) continue;
 
-          try {
-            const apiRes = await fetch(`https://api.telegra.ph/getPage/${path}?return_content=true`);
-            const data = await apiRes.json();
-            if (!data.ok) continue;
+          const page = data.result;
 
-            const title = data.result.title || 'Без названия';
-            let desc = extractText(data.result.content).slice(0, 160);
-            if (desc.length === 160) desc += '…'; // добавим троеточие только если текст обрезан
-            const description = desc;
+          const title = page.title || 'Без заголовка';
+          const description = extractText(page.content).slice(0, 100) || 'Без описания';
+          const image = findFirstImage(page.content);
 
-            const image = extractFirstImage(data.result.content);
-
-            fullPosts.push({ title, description, image, content: data.result });
-          } catch (err) {
-            console.warn('Ошибка загрузки поста:', err);
-          }
+          const postData = { title, description, image };
+          allPosts.push(postData);
         }
 
-        allPosts = fullPosts;
         displayPosts(allPosts);
-        if (allPosts.length === 0) container.textContent = 'Посты не найдены.';
 
-      } catch (err) {
-        console.error('Ошибка загрузки:', err);
+        if (allPosts.length === 0) {
+          container.textContent = 'Посты не найдены.';
+        }
+
+      } catch (e) {
         container.textContent = 'Ошибка загрузки постов.';
+        console.error(e);
       }
     }
-
-function extractText(content) {
-  let text = '';
-  content.forEach(el => {
-    if (el.tag === 'p' && el.children) {
-      el.children.forEach(child => {
-        if (typeof child === 'string') text += child + ' ';
-        else if (typeof child === 'object' && child.children) {
-          child.children.forEach(sub => {
-            if (typeof sub === 'string') text += sub + ' ';
-          });
-        }
-      });
-    }
-  });
-  return text.trim();
-}
-
-
-function extractFirstImage(content) {
-  if (!content) return null;
-
-  for (const el of content) {
-    if (el.tag === 'img' && el.attrs?.src) {
-      const src = el.attrs.src;
-      return src.startsWith('http') ? src : 'https://telegra.ph' + src;
-    }
-
-    if (el.children && Array.isArray(el.children)) {
-      const childImage = extractFirstImage(el.children);
-      if (childImage) return childImage;
-    }
-  }
-
-  return null;
-}
-
-
 
     function displayPosts(posts) {
       const container = document.getElementById('posts-container');
@@ -322,6 +247,30 @@ function extractFirstImage(content) {
         `;
         container.appendChild(div);
       });
+    }
+
+    function extractText(content) {
+      return content.map(node => {
+        if (typeof node === 'string') return node;
+        if (node.tag === 'br') return '\n';
+        if (node.tag && node.children) {
+          return extractText(node.children);
+        }
+        return '';
+      }).flat().join(' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function findFirstImage(content) {
+      for (const node of content) {
+        if (node.tag === 'img' && node.attrs && node.attrs.src) {
+          return 'https://telegra.ph' + node.attrs.src;
+        }
+        if (node.children) {
+          const child = findFirstImage(node.children);
+          if (child) return child;
+        }
+      }
+      return null;
     }
 
     function searchPosts() {
@@ -358,16 +307,11 @@ function extractFirstImage(content) {
       document.getElementById('support-popup').style.display = 'none';
     }
 
-    function openRules() {
+    document.getElementById('rules-btn').onclick = () => {
       document.getElementById('rules-popup').style.display = 'block';
-    }
-
-    function closeRules() {
-      document.getElementById('rules-popup').style.display = 'none';
-    }
+    };
 
     loadPosts();
   </script>
-
 </body>
 </html>
